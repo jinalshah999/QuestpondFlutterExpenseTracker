@@ -1,4 +1,7 @@
-import 'package:expensetracker/widgets/transactionlist.dart';
+import './widgets/chart.dart';
+
+import './widgets/addtransaction.dart';
+import './widgets/transactionlist.dart';
 
 import './models/transaction.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +49,40 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _addnewexpense(String extitle, double examount, DateTime exdt) {
+    final newex = Transaction(
+        id: DateTime.now().toString(),
+        title: extitle,
+        amount: examount,
+        date: exdt);
+
+    setState(() {
+      _listTransactions.add(newex);
+    });
+  }
+
+  void _openaddexpense(BuildContext ctx) {
+    showModalBottomSheet(
+        context: ctx,
+        builder: (_) {
+          return GestureDetector(
+            child: AddTransaction(_addnewexpense),
+            onTap: () {},
+            behavior: HitTestBehavior.opaque,
+          );
+        });
+  }
+
+  List<Transaction> get _recentTransactions {
+    return _listTransactions.where((tx) {
+      return tx.date.isAfter(
+        DateTime.now().subtract(
+          Duration(days: 7),
+        ),
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,9 +93,15 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            Chart(_recentTransactions),
             TransactionList(_listTransactions, _deltrans),
           ],
         ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openaddexpense(context),
+        child: Icon(Icons.add),
       ),
     );
   }
